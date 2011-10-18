@@ -65,24 +65,33 @@ module SerializeWithOptions
   end
 
   module InstanceMethods
-    def to_xml(opts = {})
-      set, opts = parse_serialization_options(opts)
+    def to_xml(*args)
+      set, opts = parse_serialization_options(*args)
       super(self.class.serialization_options(set).deep_merge(opts))
     end
 
-    def to_json(opts = {})
-      set, opts = parse_serialization_options(opts)
+    def to_json(*args)
+      set, opts = parse_serialization_options(*args)
       super(self.class.serialization_options(set).deep_merge(opts))
     end
 
     private
 
-    def parse_serialization_options(opts)
-      if opts.is_a? Symbol
-        set  = opts
+    def parse_serialization_options(*args)
+      if args.empty?
+        set = :default
         opts = {}
+      elsif (args.length == 1) && args[0].is_a?(Hash)
+        set = :default
+        opts = args.first
+      elsif (args.length == 1) && args[0].is_a?(Symbol)
+        set  = args.first
+        opts = {}
+      elsif (args.length == 2) && args[0].is_a?(Symbol) && args[1].is_a?(Hash)
+        set  = args[0]
+        opts = args[1]
       else
-        set  = :default
+        raise ArgumentError, "Invalid arguments #{args.inspect}"
       end
 
       [set, opts]
